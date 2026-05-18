@@ -1,0 +1,235 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Innomatics Monthly Assessment Form",
+        "formDescription": "Enter your module-wise assessment marks.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Student Name"
+            },
+            {
+              "fieldLabel": "Student Email",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Course Type",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Data Analysis"
+                  },
+                  {
+                    "option": "Data Science with Generative AI"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Python Programming",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Exploratory Data Analysis with Python",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "MYSQL",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Microsoft Power BI",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Advanced Statistics",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Microsoft Excel for Data Analysis",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Machine learning",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Deep learning",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "ANN - Artificial Neural Network",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "CNN - Convolutional Neural Network",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Computer Vision",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "NLP - Natural language Processing",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Generative AI",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "551ec277-b925-48cb-a92b-6d95aa946e80",
+      "name": "On form submission",
+      "webhookId": "58e66188-7b6e-444a-b0cb-d4b8a9758dd4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nlet marks = [];\nlet weakModules = [];\n\nif (data[\"Course Type\"] === \"Data Analysis\") {\n  const modules = [\n    \"Python Programming\",\n    \"Exploratory Data Analysis with Python\",\n    \"MYSQL\",\n    \"Microsoft Power BI\",\n    \"Advanced Statistics\",\n    \"Microsoft Excel\"\n  ];\n\n  for (let module of modules) {\n    const score = Number(data[module]);\n\n    if (!isNaN(score)) {\n      marks.push(score);\n\n      if (score <= 70) {\n        weakModules.push(module);\n      }\n    }\n  }\n}\n\nif (data[\"Course Type\"] === \"Data Science with Generative AI\") {\n  const modules = [\n    \"Machine learning\",\n    \"Deep learning\",\n    \"ANN - Artificial Neural Networks\",\n    \"CNN - Convolutional Neural Networks\",\n    \"Computer Vision\",\n    \"NLP - Natural Language Processing\",\n    \"Generative AI\"\n  ];\n\n  for (let module of modules) {\n    const score = Number(data[module]);\n\n    if (!isNaN(score)) {\n      marks.push(score);\n\n      if (score <= 70) {\n        weakModules.push(module);\n      }\n    }\n  }\n}\n\nconst average = marks.reduce((a, b) => a + b, 0) / marks.length;\n\nreturn [\n  {\n    json: {\n      average: average.toFixed(2),\n      eligible: average > 70,\n      weakModules: weakModules.join(\", \")\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0471e432-b84b-49a2-81bb-eebc338c50e7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6d70d655-ade3-49bf-80f5-945908ddb9cd",
+              "leftValue": "={{ $json.eligible }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "fa59c60f-1031-460e-8c9a-6200ae6279a9",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Congratulations!",
+        "completionMessage": "🎉 You are eligible for the placement drive.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "b6aa5b26-8d67-41aa-bf55-c3333ed237a7",
+      "name": "Form",
+      "webhookId": "fcbee7fa-c37f-4320-ac90-3f8dae6a4754"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Not Eligible",
+        "completionMessage": "=⚠️ You are not eligible.\nPlease improve in:\n{{ $json.weakModules }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        624,
+        96
+      ],
+      "id": "6c9e9061-4b6b-421f-81cf-d034fc1f6a9a",
+      "name": "Form1",
+      "webhookId": "50553238-28ba-4bae-ae53-6aa714a47602"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Form1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d0370f3a-f9ab-4bf9-aaa2-a6b7b47449f5",
+  "meta": {
+    "instanceId": "a636c30064636a5063d012b9b13d8adc3313a4a45e8fd973d824f400400b7841"
+  },
+  "id": "ENLd2DbqO2I7HQwH",
+  "tags": []
+}
